@@ -59,6 +59,17 @@ CREATE TABLE IF NOT EXISTS user_settings (
   updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- History of Tech Stack Compatibility checks; the latest one is shown as the profile badge
+CREATE TABLE IF NOT EXISTS match_results (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  login        TEXT NOT NULL COLLATE NOCASE,
+  jd_excerpt   TEXT NOT NULL,
+  percentage   INTEGER NOT NULL,
+  breakdown    TEXT NOT NULL,
+  created_at   TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_match_login ON match_results(login, id);
+
 -- When each cached resource was last fetched from GitHub (drives TTL freshness)
 CREATE TABLE IF NOT EXISTS cache_meta (
   cache_key   TEXT PRIMARY KEY COLLATE NOCASE,
