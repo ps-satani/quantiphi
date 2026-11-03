@@ -1,5 +1,8 @@
 import { portfolioRepository } from '../db/portfolioRepository.js';
 import { getDashboard } from '../services/dashboardService.js';
+import { answerQuestion } from '../services/chatService.js';
+import { computeMatch } from '../services/matchService.js';
+import { generatePitch } from '../services/pitchService.js';
 import { getSettings, updateSettings } from '../services/settingsService.js';
 import { REPO_SORTS, sortAndFilterRepos } from '../services/statsService.js';
 import { ensureSynced } from '../services/syncService.js';
@@ -39,4 +42,17 @@ export function getSettingsHandler(req, res) {
 
 export function updateSettingsHandler(req, res) {
   res.json({ settings: updateSettings(req.params.username, req.body) });
+}
+
+export async function createMatchHandler(req, res) {
+  res.status(201).json({ match: await computeMatch(req.params.username, req.body?.jobDescription) });
+}
+
+export async function chatHandler(req, res) {
+  const { question, history = [] } = req.body ?? {};
+  res.json(await answerQuestion(req.params.username, question, history));
+}
+
+export async function pitchHandler(req, res) {
+  res.json(await generatePitch(req.params.username));
 }

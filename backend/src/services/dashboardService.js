@@ -1,5 +1,8 @@
 import { portfolioRepository } from '../db/portfolioRepository.js';
 import { settingsRepository } from '../db/settingsRepository.js';
+import { SUGGESTED_QUESTIONS } from './chatService.js';
+import { hasLlm } from './llmClient.js';
+import { getLatestMatch } from './matchService.js';
 import { ensureSynced } from './syncService.js';
 import {
   computeContributions,
@@ -32,5 +35,7 @@ export async function getDashboard(username, { force = false, sort, showForks } 
       showForks: showForks ?? settings.showForks,
     }),
     settings,
+    latestMatch: getLatestMatch(login),
+    assistant: { aiEnabled: hasLlm(), suggestions: SUGGESTED_QUESTIONS },
   };
 }
