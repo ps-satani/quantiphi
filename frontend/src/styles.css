@@ -129,6 +129,25 @@ button.ghost { background: var(--surface); color: var(--text); border-color: var
 .topics { display: flex; gap: 6px; flex-wrap: wrap; }
 .topic { font-size: 11px; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); border-radius: 999px; padding: 1px 8px; }
 
+/* Match */
+.match-badge {
+  display: inline-flex; gap: 6px; align-items: center; margin-bottom: 6px;
+  border: 1px solid currentColor; border-radius: 999px; padding: 2px 10px; font-size: 12px;
+}
+.tier-strong { color: var(--good); }
+.tier-good { color: var(--accent); }
+.tier-partial { color: var(--mid); }
+.tier-low { color: var(--bad); }
+.match-form { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.match-form textarea { width: 100%; resize: vertical; }
+.match-result p { margin: 12px 0 8px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--border); border-radius: 999px; padding: 2px 10px; font-size: 12px; }
+.chip.ok { color: var(--good); border-color: var(--good); }
+.chip.half { color: var(--mid); border-color: var(--mid); }
+.chip.miss { color: var(--muted); }
+.legend-line { font-size: 12px; }
+
 @media (max-width: 800px) {
   .profile { grid-template-columns: 1fr; }
   .stats, .profile-langs { grid-column: 1; grid-row: auto; }

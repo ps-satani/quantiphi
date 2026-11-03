@@ -17,4 +17,6 @@ export const api = {
     request(`${user(username)}/dashboard${refresh ? '?refresh=true' : ''}`),
   updateSettings: (username, settings) =>
     request(`${user(username)}/settings`, { method: 'PUT', body: settings }),
+  createMatch: (username, jobDescription) =>
+    request(`${user(username)}/match`, { method: 'POST', body: { jobDescription } }),
 };

@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from './api/client.js';
 import ContributionGraph from './components/ContributionGraph.jsx';
+import MatchBadge from './components/MatchBadge.jsx';
+import MatchPanel from './components/MatchPanel.jsx';
 import ProfileHeader from './components/ProfileHeader.jsx';
 import RepoList from './components/RepoList.jsx';
 import SearchBar from './components/SearchBar.jsx';
@@ -56,6 +58,11 @@ export default function App() {
     }
   };
 
+  const runMatch = async (jobDescription) => {
+    const { match } = await api.createMatch(data.user.login, jobDescription);
+    setData((prev) => ({ ...prev, latestMatch: match }));
+  };
+
   return (
     <div className="page">
       <header className="topbar">
@@ -90,7 +97,9 @@ export default function App() {
             summary={data.summary}
             languages={data.languages}
             contributions={data.contributions}
+            badge={<MatchBadge match={data.latestMatch} />}
           />
+          <MatchPanel match={data.latestMatch} onSubmit={runMatch} />
           <ContributionGraph contributions={data.contributions} complete={data.meta.contributionsComplete} />
           <RepoList repos={data.repos} settings={data.settings} onSettingsChange={changeSettings} />
         </main>
