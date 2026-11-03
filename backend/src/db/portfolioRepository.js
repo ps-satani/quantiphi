@@ -25,6 +25,27 @@ const insertLanguage = db.prepare(
   'INSERT INTO repo_languages (repo_id, language, bytes, color) VALUES (?, ?, ?, ?)'
 );
 
+const deleteContributions = db.prepare('DELETE FROM contribution_days WHERE login = ?');
+const insertContribution = db.prepare(
+  'INSERT OR REPLACE INTO contribution_days (login, date, count) VALUES (?, ?, ?)'
+);
+const selectContributions = db.prepare(
+  'SELECT date, count FROM contribution_days WHERE login = ? AND date >= ? ORDER BY date'
+);
+
+// Total bytes per language across the user's own (non-fork) repos — feeds the pie chart and match score.
+const selectLanguageTotals = db.prepare(`
+  SELECT rl.language            AS name,
+         SUM(rl.bytes)          AS bytes,
+         COUNT(DISTINCT rl.repo_id) AS repoCount,
+         MAX(rl.color)          AS color
+  FROM repo_languages rl
+  JOIN repositories r ON r.id = rl.repo_id
+  WHERE r.owner_login = ? AND r.is_fork = 0
+  GROUP BY rl.language
+  ORDER BY bytes DESC
+`);
+
 const selectUser = db.prepare('SELECT * FROM users WHERE login = ?');
 
 const selectRepos = db.prepare('SELECT * FROM repositories WHERE owner_login = ?');
@@ -38,7 +59,7 @@ const selectRepoLanguages = db.prepare(`
 `);
 
 // Replace a user's whole snapshot atomically: either everything is saved or nothing is.
-const saveSnapshotTx = db.transaction((user, repos) => {
+const saveSnapshotTx = db.transaction((user, repos, contributions) => {
   upsertUser.run(user);
   deleteReposByOwner.run(user.login); // cascades to repo_languages
   for (const repo of repos) {
@@ -52,6 +73,10 @@ const saveSnapshotTx = db.transaction((user, repos) => {
     for (const lang of repo.languages) {
       insertLanguage.run(repo.id, lang.name, lang.bytes, lang.color ?? null);
     }
+  }
+  deleteContributions.run(user.login);
+  for (const day of contributions) {
+    insertContribution.run(user.login, day.date, day.count);
   }
 });
 
@@ -88,8 +113,16 @@ const toRepo = (row, languages) => ({
 });
 
 export const portfolioRepository = {
-  saveSnapshot(user, repos) {
-    saveSnapshotTx(user, repos);
+  saveSnapshot(user, repos, contributions = []) {
+    saveSnapshotTx(user, repos, contributions);
+  },
+
+  getContributions(login, fromDate) {
+    return selectContributions.all(login, fromDate);
+  },
+
+  getLanguageTotals(login) {
+    return selectLanguageTotals.all(login);
   },
 
   getUser(login) {

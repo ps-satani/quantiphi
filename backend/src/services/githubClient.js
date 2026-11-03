@@ -54,6 +54,11 @@ query Portfolio($login: String!) {
         repositoryTopics(first: 10) { nodes { topic { name } } }
       }
     }
+    contributionsCollection {
+      contributionCalendar {
+        weeks { contributionDays { date contributionCount } }
+      }
+    }
   }
 }`;
 
@@ -98,7 +103,27 @@ async function fetchViaGraphQL(login) {
       updatedAt: r.updatedAt,
       languages: r.languages.edges.map((e) => ({ name: e.node.name, bytes: e.size, color: e.node.color })),
     })),
+    contributions: u.contributionsCollection.contributionCalendar.weeks
+      .flatMap((w) => w.contributionDays)
+      .map((d) => ({ date: d.date, count: d.contributionCount })),
   };
+}
+
+// REST has no contribution calendar; public events (last ~90 days, max 300) are the closest signal.
+async function fetchContributionsFromEvents(login) {
+  const perDay = new Map();
+  for (let page = 1; page <= 3; page++) {
+    const events = await request(
+      `${API}/users/${encodeURIComponent(login)}/events/public?per_page=100&page=${page}`
+    );
+    for (const e of events) {
+      const date = e.created_at.slice(0, 10);
+      const weight = e.type === 'PushEvent' ? e.payload?.size ?? e.payload?.distinct_size ?? 1 : 1;
+      perDay.set(date, (perDay.get(date) ?? 0) + weight);
+    }
+    if (events.length < 100) break;
+  }
+  return [...perDay].map(([date, count]) => ({ date, count }));
 }
 
 // ---------- REST fallback (no token): primary language only, size used as a byte estimate ----------
@@ -145,6 +170,7 @@ async function fetchViaRest(login) {
       // repo.size is in KB; it is the best size signal REST gives without one extra call per repo
       languages: r.language ? [{ name: r.language, bytes: Math.max(r.size, 1) * 1024, color: null }] : [],
     })),
+    contributions: await fetchContributionsFromEvents(u.login),
   };
 }
 
