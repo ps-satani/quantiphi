@@ -19,4 +19,7 @@ export const api = {
     request(`${user(username)}/settings`, { method: 'PUT', body: settings }),
   createMatch: (username, jobDescription) =>
     request(`${user(username)}/match`, { method: 'POST', body: { jobDescription } }),
+  chat: (username, question, history) =>
+    request(`${user(username)}/chat`, { method: 'POST', body: { question, history } }),
+  pitch: (username) => request(`${user(username)}/pitch`, { method: 'POST' }),
 };

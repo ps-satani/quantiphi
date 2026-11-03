@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from './api/client.js';
+import ChatWidget from './components/ChatWidget.jsx';
 import ContributionGraph from './components/ContributionGraph.jsx';
 import MatchBadge from './components/MatchBadge.jsx';
 import MatchPanel from './components/MatchPanel.jsx';
@@ -99,9 +100,10 @@ export default function App() {
             contributions={data.contributions}
             badge={<MatchBadge match={data.latestMatch} />}
           />
-          <MatchPanel match={data.latestMatch} onSubmit={runMatch} />
+          <MatchPanel username={data.user.login} match={data.latestMatch} onSubmit={runMatch} />
           <ContributionGraph contributions={data.contributions} complete={data.meta.contributionsComplete} />
           <RepoList repos={data.repos} settings={data.settings} onSettingsChange={changeSettings} />
+          <ChatWidget username={data.user.login} assistant={data.assistant} />
         </main>
       )}
     </div>

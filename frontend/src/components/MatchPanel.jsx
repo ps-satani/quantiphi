@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import PitchCard from './PitchCard.jsx';
 
-export default function MatchPanel({ match, onSubmit }) {
+export default function MatchPanel({ username, match, onSubmit }) {
   const [jd, setJd] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -57,6 +58,7 @@ export default function MatchPanel({ match, onSubmit }) {
             ))}
           </div>
           <p className="muted legend-line">✓ code in that language · ~ mentioned in a repo (half credit) · ✗ no evidence</p>
+          <PitchCard username={username} matchId={match.id} />
         </div>
       )}
     </section>
